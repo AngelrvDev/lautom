@@ -103,10 +103,18 @@ def convert_to_excel(file_name: str):
         y que exista el archivo CSV en la subcarpeta csv/.
     """
     df = pd.read_csv(f"{PATH}/csv/{file_name}.csv", sep="\t")
+    df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'], format='%Y-%m-%d %H:%M:%S')
+
 
     with pd.ExcelWriter(f"{PATH}/excel/{file_name}.xlsx", engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Reporte")
         worksheet = writer.sheets["Reporte"]
+
+        # Aplicar formato de fecha a la columna A
+        for cell in worksheet['A']:
+            if cell.row == 1:
+                continue  # encabezado
+            cell.number_format = 'DD/MM/YYYY HH:MM'
 
         # Ajustar ancho automático
         for col in worksheet.columns:
@@ -210,3 +218,12 @@ def add_attachment(msg: EmailMessage, file: str):
             subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
             filename=f"{file}.xlsx"
         )
+
+def remove_temp_files(file: str):
+    try:
+        os.remove(f"{PATH}/csv/{file}.csv")
+        os.remove(f"{PATH}/excel/{file}.xlsx")
+    except FileNotFoundError:
+        print("El archivo no fue encontrado.")
+    except PermissionError:
+        print("No tienes permisos para eliminar este archivo.")
