@@ -18,19 +18,22 @@ Variables de entorno requeridas:
 
 Todas las variables son obligatorias excepto APP_PATH, que tiene un valor por defecto.
 """
-from dotenv import load_dotenv
+
 import os
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
-PATH = os.getenv("APP_PATH", './temp')
+CSV_PATH = f"{os.getenv('APP_PATH')}/csv"
+EXCEL_PATH = f"{os.getenv('APP_PATH')}/excel"
 
-SSH_PORT = int(os.getenv("SSH_PORT"))
+SSH_PORT = int(os.getenv("SSH_PORT", "22"))
 SSH_USER = os.getenv("SSH_USER")
 SSH_PASSWORD = os.getenv("SSH_PASSWORD")
 SSH_PATH = os.getenv("SSH_PATH")
 
 SMTP_HOST = os.getenv("SMTP_HOST")
-SMTP_PORT = int(os.getenv("SMTP_PORT"))
+SMTP_PORT = int(os.getenv("SMTP_PORT", "22"))
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")

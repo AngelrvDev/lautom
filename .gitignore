@@ -4,3 +4,4 @@ temp/*
 test/*
 .env
 *.log
+*.json

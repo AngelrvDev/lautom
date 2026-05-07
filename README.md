@@ -12,18 +12,33 @@ Lautom es un proyecto Python que automatiza el proceso de:
 
 ## Requisitos
 
-- Python 3.x
+- Python Python 3.6.8
 - Dependencias listadas en `requirements.txt`
 
 ## Instalación
 
 1. Clona este repositorio
-2. Instala las dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copia el archivo `.env.example` a `.env` y configura las variables de entorno necesarias
+2. Instalacion en CentOs7
+  ```bash
+    yum install -y python3
+    yum install -y python36-devel
+  ```
+3. Instala las dependencias:
+  ```bash
+    pip3 install -r requirements.txt
+  ```
+4. Copia el archivo `.env.example` a `.env` y configura las variables de entorno necesarias
 
+## Entorno de desarrollo
+Para el entorno de desarrollo se requiere de Docker
+1. Construir la imagen y levantar el servicio
+  ```bash
+    docker-compose up --build 
+  ```
+2. Entrar en el contenedor
+  ```bash
+    docker-compose run app /bin/bash
+  ```
 ## Uso
 
 Ejecuta el script de prueba principal:
