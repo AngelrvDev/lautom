@@ -78,7 +78,7 @@ def automatizacion(conf, days_ago=0, current_date=None):
 
         # ------ Eliminar el csv temporal -------------
         file = f"{file_name}.csv"
-        #remove_temp_file(file=file, path=CSV_PATH)
+        remove_temp_file(file=file, path=CSV_PATH)
 
         if excel_file.is_file():
             FILES.append(file_name)
