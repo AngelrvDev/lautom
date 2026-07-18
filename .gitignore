@@ -5,3 +5,5 @@ test/*
 .env
 *.log
 *.json
+Dockerfile
+docker-compose.yml
