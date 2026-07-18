@@ -11,14 +11,16 @@ import logging
 import os
 import smtplib
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
 from typing import List
 
 import pandas as pd
 import paramiko
 
-from env import (
+from core.env import (
     CSV_PATH,
     EXCEL_PATH,
+    RSA_KEY,
     SMTP_HOST,
     SMTP_PASSWORD,
     SMTP_PORT,
@@ -28,7 +30,7 @@ from env import (
     SSH_PORT,
     SSH_USER,
 )
-from logger_config import setup_logging
+from core.logger import setup_logging
 
 setup_logging()
 LOGGER = logging.getLogger(__name__)
@@ -64,33 +66,48 @@ def download_csv(host: str, query: str, file_name: str):
         Requiere que las variables de entorno SSH_PORT, SSH_USER, SSH_PASSWORD,
         SSH_PATH y PATH estén configuradas correctamente.
     """
-    # ----- 1 Conexion SSH ------
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(hostname=host, port=SSH_PORT, username=SSH_USER, password=SSH_PASSWORD)
-    LOGGER.info(f"[{host}] Conexión exitosa con el servidor")
+    ssh = None
+    try:
+        # ----- 1 Conexion SSH ------
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        key_rsa = paramiko.RSAKey.from_private_key_file(os.path.expanduser(RSA_KEY))
+        ssh.connect(
+            hostname=host,
+            port=SSH_PORT,
+            username=SSH_USER,
+            pkey=key_rsa,
+            timeout=15,
+        )
+        LOGGER.info(f"[{host}] Conexión exitosa con el servidor")
 
-    # Ejecutar query y generar CSV
-    stdin, stdout, stderr = ssh.exec_command(
-        query + " > " + f"{SSH_PATH}/{file_name}.csv"
-    )
-    # Esperar a que termine la ejecución del query
-    stdout.channel.recv_exit_status()
-    # Excepcion
-    error = stderr.read().decode()
-    if error:
-        raise Exception(f"[{host}] Error al generar CSV: {error}")
+        # Ejecutar query y generar CSV
+        stdin, stdout, stderr = ssh.exec_command(
+            query + " > " + f"{SSH_PATH}/{file_name}.csv"
+        )
+        # Esperar a que termine la ejecución del query
+        stdout.channel.recv_exit_status()
+        # Excepcion
+        error = stderr.read().decode()
+        if error:
+            raise Exception(f"[{host}] Error al generar CSV: {error}")
 
-    LOGGER.info(f"[{host}] Generado con exito el archivo: {file_name}.csv")
+        LOGGER.info(f"[{host}] Generado con exito el archivo: {file_name}.csv")
 
-    # Descargar el archivo CSV
-    sftp = ssh.open_sftp()
-    sftp.get(f"{SSH_PATH}/{file_name}.csv", f"{CSV_PATH}/{file_name}.csv")
-    sftp.close()
-    LOGGER.info(f"[{host}] Archivo descargado con exito")
-    # Borrar el archivo CSV generado en el servidor
-    ssh.exec_command(f"rm -f {SSH_PATH}/{file_name}.csv")
-    ssh.close()
+        # Descargar el archivo CSV
+        sftp = ssh.open_sftp()
+        sftp.get(f"{SSH_PATH}/{file_name}.csv", f"{CSV_PATH}/{file_name}.csv")
+        sftp.close()
+        LOGGER.info(f"[{host}] Archivo descargado con exito")
+        # Borrar el archivo CSV generado en el servidor
+        ssh.exec_command(f"rm -f {SSH_PATH}/{file_name}.csv")
+        return True
+    except Exception as e:
+        LOGGER.error(f"[{host}] Error crítico en descarga: {e}")
+        return False  # Indica que este reporte falló
+    finally:
+        if ssh:
+            ssh.close()
 
 
 def convert_to_excel(file_name: str):
@@ -202,6 +219,8 @@ def send_message(subject: str, message: str, files: List[str], address: List[str
     msg["From"] = f"Luzware <{SMTP_USER}>"
     msg["To"] = address
 
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid(domain="luzware.com")
     msg.set_content(message)
 
     for file in files:
