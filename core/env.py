@@ -33,7 +33,9 @@ SSH_USER = os.getenv("SSH_USER")
 SSH_PASSWORD = os.getenv("SSH_PASSWORD")
 SSH_PATH = os.getenv("SSH_PATH")
 
-SMTP_HOST = os.getenv("SMTP_HOST")
+RSA_KEY = str(os.getenv("RSA_KEY"))
+
+SMTP_HOST = str(os.getenv("SMTP_HOST"))
 SMTP_PORT = int(os.getenv("SMTP_PORT", "22"))
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_USER = str(os.getenv("SMTP_USER"))
+SMTP_PASSWORD = str(os.getenv("SMTP_PASSWORD"))
