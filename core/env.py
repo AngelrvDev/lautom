@@ -25,8 +25,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CSV_PATH = f"{os.getenv('APP_PATH')}/csv"
-EXCEL_PATH = f"{os.getenv('APP_PATH')}/excel"
+APP_PATH = os.getenv('APP_PATH')
+CSV_PATH = f"{os.getenv('APP_PATH')}/temp/csv"
+EXCEL_PATH = f"{os.getenv('APP_PATH')}/temp/excel"
 
 SSH_PORT = int(os.getenv("SSH_PORT", "22"))
 SSH_USER = os.getenv("SSH_USER")
@@ -39,3 +40,5 @@ SMTP_HOST = str(os.getenv("SMTP_HOST"))
 SMTP_PORT = int(os.getenv("SMTP_PORT", "22"))
 SMTP_USER = str(os.getenv("SMTP_USER"))
 SMTP_PASSWORD = str(os.getenv("SMTP_PASSWORD"))
+
+LOG_CONSOLE = os.getenv("LOG_CONSOLE", "false").lower()
