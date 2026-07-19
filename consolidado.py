@@ -73,6 +73,7 @@ def automatizacion_consolidada(conf):
         address=conf["address"],
         files=[output_name],
     )
+    print(output_name)
 
     for file_name in downloaded_files:
         remove_temp_file(file=f"{file_name}.csv", path=CSV_PATH)
