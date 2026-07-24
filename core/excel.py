@@ -172,6 +172,9 @@ def tab_dinamica(file_name: str):
         # Primera hoja
         hoja = writer.book.sheetnames[0]
 
+        # Obtener hoja para aplicar formato
+        ws = writer.book[hoja]
+
         # Escribir desde J1
         finalTable.to_excel(
             writer,
@@ -180,9 +183,6 @@ def tab_dinamica(file_name: str):
             startcol=8,  # Columna J
             index=False,
         )
-
-        # Obtener hoja para aplicar formato
-        ws = writer.book[hoja]
 
         # Encabezados (J1:L1)
         apply_header_style(ws, 9, 11)
