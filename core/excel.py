@@ -1,5 +1,7 @@
 import logging
 import os
+import openpyxl
+from openpyxl.utils.dataframe import dataframe_to_rows
 from typing import List
 
 import pandas as pd
@@ -165,36 +167,35 @@ def tab_dinamica(file_name: str):
 
     finalTable = pd.concat([pivotTable, grandTotal], ignore_index=True)
 
-    # Escribir en el mismo archivo
-    with pd.ExcelWriter(
-        file_name, engine="openpyxl", mode="a", if_sheet_exists="overlay"
-    ) as writer:
-        # Primera hoja
-        hoja = writer.book.sheetnames[0]
+    # 4. Escribir directamente usando Openpyxl (Compatible con Pandas 1.1.5)
+    wb = openpyxl.load_workbook(file_name)
+    ws = wb.worksheets[0]  # Toma la primera pestaña existente
 
-        # Obtener hoja para aplicar formato
-        ws = writer.book[hoja]
+    # Insertar encabezados de la tabla dinámica en J1:L1 (Fila 1, Cols 10, 11, 12)
+    headers = list(finalTable.columns)
+    for col_idx, header_value in enumerate(headers, start=10):  # Columna 10 es J
+        ws.cell(row=1, column=col_idx, value=header_value)
 
-        # Escribir desde J1
-        finalTable.to_excel(
-            writer,
-            sheet_name=hoja,
-            startrow=0,
-            startcol=8,  # Columna J
-            index=False,
-        )
+    # Insertar los datos fila por fila
+    for row_idx, row_data in enumerate(finalTable.values, start=2):
+        for col_idx, val in enumerate(row_data, start=10):
+            ws.cell(row=row_idx, column=col_idx, value=val)
 
-        # Encabezados (J1:L1)
-        apply_header_style(ws, 9, 11)
+    # 5. Aplicar formato con tus funciones existentes
+    # Encabezados (Col 10=J a Col 12=L)
+    apply_header_style(ws, 10, 12)
 
-        # Fila Total general
-        ultima_fila = len(finalTable) + 1
+    # Fila Total general
+    ultima_fila = len(finalTable) + 1  # Incluye fila de encabezado
+    for celda in ws[f"J{ultima_fila}:L{ultima_fila}"][0]:
+        celda.fill = TOTAL_FILL
+        celda.font = HEADER_FONT
 
-        for celda in ws[f"I{ultima_fila}:K{ultima_fila}"][0]:
-            celda.fill = TOTAL_FILL
-            celda.font = HEADER_FONT
+    # Ajustar ancho de columnas (J:L)
+    adjust_column_widths(ws, start_column=10, end_column=12, padding=3)
 
-        # Ajustar ancho de columnas automáticamente
-        adjust_column_widths(ws, start_column=9, end_column=11, padding=3)
+    # Guardar cambios en el mismo archivo
+    wb.save(file_name)
+    wb.close()
 
     print("Tabla dinámica generada y formateada correctamente.")
