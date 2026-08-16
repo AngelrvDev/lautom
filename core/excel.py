@@ -153,15 +153,12 @@ def tab_dinamica(file_name: str):
         {"Minutos": "sum", "Consumo": "sum"}
     )
 
-    # Renombrar columnas
-    pivotTable.columns = ["Etiquetas de fila", "Suma de Minutos", "Suma de Consumo"]
-
     # Agregar fila Total general
     grandTotal = pd.DataFrame(
         {
-            "Etiquetas de fila": ["Total general"],
-            "Suma de Minutos": [pivotTable["Suma de Minutos"].sum()],
-            "Suma de Consumo": [pivotTable["Suma de Consumo"].sum()],
+            "Días": ["Total"],
+            "Minutos": [pivotTable["Minutos"].sum()],
+            "Consumo": [pivotTable["Consumo"].sum()],
         }
     )
 
@@ -179,7 +176,15 @@ def tab_dinamica(file_name: str):
     # Insertar los datos fila por fila
     for row_idx, row_data in enumerate(finalTable.values, start=2):
         for col_idx, val in enumerate(row_data, start=10):
-            ws.cell(row=row_idx, column=col_idx, value=val)
+            cell = ws.cell(row=row_idx, column=col_idx, value=val)
+            #ws.cell(row=row_idx, column=col_idx, value=val)
+            # Formatos numéricos y de fecha por columna
+            if col_idx == 10 and val != "Total":  # Columna J: Días
+                cell.number_format = 'DD-mmm'
+            elif col_idx == 11:  # Columna K: Minutos
+                cell.number_format = '#,##0'
+            elif col_idx == 12:  # Columna L: Consumo
+                cell.number_format = '"$"#,##0.00'
 
     # 5. Aplicar formato con tus funciones existentes
     # Encabezados (Col 10=J a Col 12=L)
